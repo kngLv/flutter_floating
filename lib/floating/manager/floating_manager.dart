@@ -46,33 +46,41 @@ class FloatingManager {
     return _floatingCache.containsKey(key);
   }
 
-  ///关闭 [key] 对应的 [FloatingOverlay]
-  closeFloating(Object key) {
-    var floating = _floatingCache[key];
-    floating?.close();
-  }
-
-  ///关闭所有的 [FloatingOverlay]
-  closeAllFloating() {
-    _floatingCache.forEach((key, value) => value.close());
-    _floatingCache.clear();
-  }
 
   ///释放 [key] 对应的 [FloatingOverlay]
-  disposeFloating(Object key) {
-    var floating = _floatingCache[key];
-    floating?.close();
-    floating?.dispose();
-    _floatingCache.remove(floating);
+  void disposeFloating(Object key) {
+    // remove from cache first so containsFloating reflects removal immediately
+    var floating = _floatingCache.remove(key);
+    if (floating == null) return;
+    try {
+      floating.close();
+    } catch (_) {
+      // ignore
+    }
+    try {
+      floating.dispose();
+    } catch (_) {
+      // ignore
+    }
   }
 
   ///释放所有 [FloatingOverlay]
-  disposeAllFloating() {
-    _floatingCache.forEach((key, value) {
-      value.close();
-      value.dispose();
-    });
+  void disposeAllFloating() {
+    // copy and clear first to ensure cache is emptied even if dispose() throws
+    final values = List<FloatingOverlay>.from(_floatingCache.values);
     _floatingCache.clear();
+    for (final value in values) {
+      try {
+        value.close();
+      } catch (_) {
+        // ignore
+      }
+      try {
+        value.dispose();
+      } catch (_) {
+        // ignore
+      }
+    }
   }
 
   ///悬浮窗数量

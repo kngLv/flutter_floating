@@ -7,31 +7,18 @@ import 'package:flutter/foundation.dart';
 /// @des：
 
 class FloatingLog {
-  FloatingLog(bool isShowLog,String logKey) {
-    init(isShowLog,logKey);
+  FloatingLog(bool isShowLog, String logKey) {
+    init(isShowLog, logKey);
   }
 
-  static const _separator = "=";
-  static const _split =
-      "$_separator$_separator$_separator$_separator$_separator$_separator$_separator$_separator$_separator";
   static const _title = "Floating_Log";
   static const int _limitLength = 800;
-  static String _startLine = "$_split$_title$_split";
   bool isShowLog = false;
   String logKey = "";
 
   void init(bool isShowLog, String logKey) {
     this.isShowLog = isShowLog;
     this.logKey = logKey;
-    _startLine = "$_split$_title$_split";
-    var endLineStr = StringBuffer();
-    var cnCharReg = RegExp("[\u4e00-\u9fa5]");
-    for (int i = 0; i < _startLine.length; i++) {
-      if (cnCharReg.stringMatch(_startLine[i]) != null) {
-        endLineStr.write(_separator);
-      }
-      endLineStr.write(_separator);
-    }
   }
 
   log(dynamic obj) {
