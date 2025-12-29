@@ -27,7 +27,7 @@ If you prefer English, see the translated docs:
 
 ```yaml
 dependencies:
-  flutter_floating: ^1.1.0
+  flutter_floating: ^version
 ```
 
 然后运行：
