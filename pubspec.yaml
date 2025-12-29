@@ -1,6 +1,6 @@
 name: flutter_floating
 description: Flutter Permissionless Floating Window, a lightweight, flexible, and fully functional Flutter floating window component.
-version: 2.0.0
+version: 2.0.1
 homepage: https://github.com/kngLv/flutter_floating
 
 environment:
