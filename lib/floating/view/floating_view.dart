@@ -80,6 +80,9 @@ class FloatingView extends StatefulWidget {
 class _FloatingViewState extends State<FloatingView>
     with TickerProviderStateMixin, FloatingScrollMixin, WidgetsBindingObserver {
   final _floatingGlobalKey = GlobalKey();
+
+  // Key for the outer Stack so we can read the Stack's real RenderBox size
+  final GlobalKey _stackKey = GlobalKey();
   RenderBox? renderBox;
 
   // 最近一次感知到的父容器/窗口尺寸，用于比较变化
@@ -296,8 +299,9 @@ class _FloatingViewState extends State<FloatingView>
     // 在下一帧读取 MediaQuery 的 size（safe，避免在非 build 阶段直接依赖 context）
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final size = MediaQuery.of(context).size;
-      _maybeHandleParentSize(size);
+      final RenderBox? box = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+      final Size? stackSize = box?.size;
+      if (stackSize != null) _maybeHandleParentSize(stackSize);
     });
   }
 
@@ -328,6 +332,7 @@ class _FloatingViewState extends State<FloatingView>
   @override
   Widget build(BuildContext context) {
     return Stack(
+      key: _stackKey,
       children: [
         Positioned(
           left: fx,
@@ -339,27 +344,16 @@ class _FloatingViewState extends State<FloatingView>
               child: Offstage(
                 offstage: isHide,
                 child: LayoutBuilder(builder: (context, constraints) {
-                  // 使用 constraints 或 MediaQuery 作为有效尺寸来源
                   final effectiveSize =
                       (constraints.maxWidth.isFinite && constraints.maxHeight.isFinite)
                           ? Size(constraints.maxWidth, constraints.maxHeight)
                           : MediaQuery.of(context).size;
-                  //未初始化位置时，记录父尺寸
-                  if (_isInitPosition == false) {
-                    _lastParentSize = effectiveSize;
-                    _parentWidth = effectiveSize.width;
-                    _parentHeight = effectiveSize.height;
-                  } else {
-                    // 如果检测到父尺寸发生变化，通过 post frame callback 安全地处理变化（避免在 build 中直接 setState）
-                    if (_lastParentSize == null ||
-                        _lastParentSize!.width != effectiveSize.width ||
-                        _lastParentSize!.height != effectiveSize.height) {
-                      // 在下一帧通过 _maybeHandleParentSize 执行实际的更新与 debounce。
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (!mounted) return;
-                        _maybeHandleParentSize(effectiveSize);
-                      });
-                    }
+                  final RenderBox? box = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+                  final Size stackSize = box?.size ?? effectiveSize;
+                  if (_lastParentSize == null ||
+                      _lastParentSize!.width != stackSize.width ||
+                      _lastParentSize!.height != stackSize.height) {
+                    _maybeHandleParentSize(stackSize);
                   }
                   return Opacity(child: _contentWidget, opacity: _isInitPosition ? 1 : 0);
                 }),
@@ -745,9 +739,11 @@ class _FloatingViewState extends State<FloatingView>
   }
 
   _setParentSize() {
-    if (_parentHeight == 0 || _parentWidth == 0) {
-      _parentWidth = MediaQuery.of(context).size.width;
-      _parentHeight = MediaQuery.of(context).size.height;
+    final RenderBox? box = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+    final Size? stackSize = box?.size;
+    if (_parentHeight == 0 || _parentWidth == 0 && stackSize != null) {
+      _parentWidth = stackSize!.width;
+      _parentHeight = stackSize.height;
     }
   }
 

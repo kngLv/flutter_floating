@@ -25,13 +25,14 @@ class _InternalFloatingPageState extends State<InternalFloatingPage> {
       isSnapToEdge: true,
       enablePositionCache: true,
       dragOpacity: 1,
-      marginBottom: 100,
+      marginBottom: 0,
     ),
   );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: Stack(
         fit: StackFit.expand,
         children: [floating.getFloating()],
