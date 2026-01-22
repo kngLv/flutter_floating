@@ -1,3 +1,6 @@
+### v2.0.2
+修复单页面使用时部分情况下悬浮窗位置异常的问题
+
 ### v2.0.1
 
 修复 FloatingManager.disposeFloating 时未移除key 导致 containsFloating 判断错误的问题
